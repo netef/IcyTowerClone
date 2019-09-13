@@ -5,9 +5,12 @@ using UnityEngine;
 public class PlayerMovementScript : MonoBehaviour
 {
     public GameObject star;
+    public GameObject GFX;
     private Rigidbody2D rb;
     public float jumpForce;
     private bool jump = false;
+    private bool stars = false;
+    private bool isGrounded = false;
 
     [SerializeField]
     private float speed = 0;
@@ -19,9 +22,12 @@ public class PlayerMovementScript : MonoBehaviour
 
     private float inputX;
 
+    private Animator anim;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GameObject.Find("GFX").GetComponent<Animator>();
     }
 
     private void Update()
@@ -29,7 +35,10 @@ public class PlayerMovementScript : MonoBehaviour
         inputX = Input.GetAxisRaw("Horizontal");
         Movement();
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        anim.SetFloat("velocity", Mathf.Abs(speed));
+        anim.SetBool("isGrounded", isGrounded);
+
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
             jump = true;
     }
 
@@ -38,13 +47,30 @@ public class PlayerMovementScript : MonoBehaviour
         rb.velocity = new Vector2(speed, rb.velocity.y);
         if (jump)
             Jump();
-
+        if (stars)
+            GFX.transform.Rotate(new Vector3(0, 0, 360) * Time.deltaTime);
+        else
+            GFX.transform.rotation = new Quaternion(0, 0, 0, 0);
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag.Equals("wall"))
+        if (collision.gameObject.CompareTag("wall"))
             speed = -speed;
+        else if (collision.gameObject.CompareTag("platform"))
+            isGrounded = true;
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("platform"))
+            isGrounded = true;
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("platform"))
+            isGrounded = false;
     }
 
     void Movement()
@@ -73,13 +99,14 @@ public class PlayerMovementScript : MonoBehaviour
     void Jump()
     {
         jump = false;
-        rb.velocity = new Vector2(rb.velocity.x, jumpForce + (Mathf.Abs(speed)) / 2);
-        if (Mathf.Abs(speed) > 15f)
+        rb.velocity = new Vector2(rb.velocity.x, jumpForce + (Mathf.Abs(speed)) / 2.5f);
+        if (Mathf.Abs(speed) > 15f && !stars)
             Stars();
     }
 
     void Stars()
     {
+        stars = true;
         StartCoroutine(Make());
     }
 
@@ -95,5 +122,6 @@ public class PlayerMovementScript : MonoBehaviour
             starRb.velocity = new Vector2(rand, 10);
             Destroy(starCreated, 3f);
         }
+        stars = false;
     }
 }

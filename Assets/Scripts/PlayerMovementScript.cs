@@ -129,7 +129,7 @@ public class PlayerMovementScript : MonoBehaviour
     void Jump()
     {
         jump = false;
-        rb.velocity = new Vector2(rb.velocity.x, jumpForce + (Mathf.Abs(speed)) / 2f);
+        rb.velocity = new Vector2(rb.velocity.x, jumpForce + (Mathf.Abs(speed)) / 3.2f);
         if (Mathf.Abs(speed) > 15f && !stars)
             Stars();
         else

@@ -29,6 +29,6 @@ public class PlatformScript : MonoBehaviour
             gameManager.platformsMoveDown = true;
         }
         else if (gameManager.platformsMoveDown == true)
-            rb.velocity = new Vector2(0, -3);
+            rb.velocity = new Vector2(0, -4);
     }
 }

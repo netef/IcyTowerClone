@@ -1,9 +1,16 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMovementScript : MonoBehaviour
 {
+
+    private Vector3 scale;
+    private bool facingRight = true;
+    private AudioSource audio;
+    public AudioClip tutururuSound;
+    public AudioClip tiraraiSound;
     public GameObject star;
     public GameObject GFX;
     private Rigidbody2D rb;
@@ -26,6 +33,8 @@ public class PlayerMovementScript : MonoBehaviour
 
     void Start()
     {
+        scale = transform.localScale;
+        audio = GetComponent<AudioSource>();
         rb = GetComponent<Rigidbody2D>();
         anim = GameObject.Find("GFX").GetComponent<Animator>();
     }
@@ -38,8 +47,29 @@ public class PlayerMovementScript : MonoBehaviour
         anim.SetFloat("velocity", Mathf.Abs(speed));
         anim.SetBool("isGrounded", isGrounded);
 
+        if (inputX != 0)
+        {
+            if (inputX < 0 && facingRight)
+                turnLeft();
+            else if (inputX > 0 && !facingRight)
+                turnRight();
+        }
+
+
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
             jump = true;
+    }
+
+    private void turnRight()
+    {
+        facingRight = true;
+        transform.localScale = new Vector3(scale.x *= -1, transform.localScale.y, transform.localScale.z);
+    }
+
+    private void turnLeft()
+    {
+        facingRight = false;
+        transform.localScale = new Vector3(scale.x *= -1, transform.localScale.y, transform.localScale.z);
     }
 
     private void FixedUpdate()
@@ -99,14 +129,17 @@ public class PlayerMovementScript : MonoBehaviour
     void Jump()
     {
         jump = false;
-        rb.velocity = new Vector2(rb.velocity.x, jumpForce + (Mathf.Abs(speed)) / 2.5f);
+        rb.velocity = new Vector2(rb.velocity.x, jumpForce + (Mathf.Abs(speed)) / 2f);
         if (Mathf.Abs(speed) > 15f && !stars)
             Stars();
+        else
+            audio.PlayOneShot(tutururuSound);
     }
 
     void Stars()
     {
         stars = true;
+        audio.PlayOneShot(tiraraiSound);
         StartCoroutine(Make());
     }
 
@@ -118,7 +151,7 @@ public class PlayerMovementScript : MonoBehaviour
             GameObject starCreated = Instantiate(star, transform.position, Quaternion.identity);
             starCreated.AddComponent<Rigidbody2D>();
             Rigidbody2D starRb = starCreated.GetComponent<Rigidbody2D>();
-            float rand = Random.Range(-10f, 10);
+            float rand = UnityEngine.Random.Range(-10f, 10);
             starRb.velocity = new Vector2(rand, 10);
             Destroy(starCreated, 3f);
         }
